@@ -187,3 +187,5 @@ JuceLibraryCode/JucePluginDefines.h
 JuceLibraryCode/ReadMe.txt
 MultiAllPass.filtergraph
 Builds/VisualStudio2017/.vs/MultiAllPass/v15/ipch/AutoPCH/7c71e8d945df33aa/PLUGINPROCESSOR.ipch
+Builds/VisualStudio2017/.vs/MultiAllPass/v15/ipch/AutoPCH/887a8a80ffec108a/INCLUDE_JUCE_AUDIO_PROCESSORS.ipch
+Builds/VisualStudio2017/x64/Release/Shared Code/MultiAll.4CC5F9AF.tlog/CL.write.1.tlog

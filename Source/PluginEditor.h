@@ -12,6 +12,72 @@
 #include "PluginProcessor.h"
 
 //==============================================================================
+
+class OtherLookAndFeel : public juce::LookAndFeel_V4
+{
+public:
+	OtherLookAndFeel()
+	{
+		setColour(juce::Slider::thumbColourId, juce::Colours::red);
+	}
+
+	juce::Colour light = juce::Colour::fromHSV(0.9f, 0.5f, 0.6f, 1.0f);
+	juce::Colour medium = juce::Colour::fromHSV(0.9f, 0.5f, 0.5f, 1.0f);
+	juce::Colour dark = juce::Colour::fromHSV(0.9f, 0.5f, 0.4f, 1.0f);
+
+	static const int SCALE = 70;
+	static const int FONT_SIZE = 24;
+
+	void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height, float sliderPos, const float rotaryStartAngle, const float rotaryEndAngle, juce::Slider&) override
+	{
+		auto radius = ((float)juce::jmin(width / 2, height / 2) - 4.0f) * 0.9f;
+		auto centreX = (float)x + (float)width  * 0.5f;
+		auto centreY = (float)y + (float)height * 0.5f;
+		auto rx = centreX - radius;
+		auto ry = centreY - radius;
+		auto rw = radius * 2.0f;
+		auto angle = rotaryStartAngle + sliderPos * (rotaryEndAngle - rotaryStartAngle);
+
+		// fill
+		//g.setColour(dark);
+		//g.setOpacity(0.2f);
+		//g.fillEllipse(rx, ry, rw, rw);
+
+		// outline
+		const float lineThickness = 6.0f;
+		
+		g.setColour(medium);
+		g.drawEllipse(rx, ry, rw, rw, lineThickness);
+
+		juce::Path p;
+		auto pointerLength = radius * 0.2f;
+		auto pointerThickness = lineThickness;
+		p.addRectangle(-pointerThickness * 0.5f, -radius, pointerThickness, pointerLength);
+		p.applyTransform(juce::AffineTransform::rotation(angle).translated(centreX, centreY));
+
+		// pointer
+		g.setColour(medium);
+		g.fillPath(p);
+	}
+
+	juce::Label *createSliderTextBox(juce::Slider &) override
+	{
+		auto *l = new juce::Label();
+		l->setJustificationType(juce::Justification::centred);
+		l->setFont(juce::Font(0.9f * FONT_SIZE * 0.01f * SCALE));
+		return l;
+	}
+
+	void drawButtonBackground(juce::Graphics& g, juce::Button& button, const juce::Colour& backgroundColour, bool, bool isButtonDown) override
+	{
+		auto buttonArea = button.getLocalBounds();
+
+		g.setColour(backgroundColour);
+		g.fillRect(buttonArea);
+	}
+};
+
+//==============================================================================
 class MultiAllPassAudioProcessorEditor : public juce::AudioProcessorEditor
 {
 public:
@@ -19,15 +85,15 @@ public:
     ~MultiAllPassAudioProcessorEditor() override;
 
 	// GUI setup
-	static const int N_SLIDERS_COUNT = 5;
-	static const int SCALE = 70;
-	static const int LABEL_OFFSET = 25;
-	static const int SLIDER_WIDTH = 200;
+	static const int N_SLIDERS = 4;
+	static const int SLIDER_WIDTH = 140;
+	static const int SLIDER_FONT_SIZE = 20;
+
+	static const int FONT_DIVISOR = 9;
 
 	static const int TYPE_BUTTON_GROUP = 1;
-	static const int BOTTOM_MENU_HEIGHT = 50;
-
-    //==============================================================================
+	
+	//==============================================================================
 	void paint (juce::Graphics&) override;
     void resized() override;
 
@@ -39,23 +105,23 @@ private:
     // access the processor object that created it.
     MultiAllPassAudioProcessor& audioProcessor;
 
+	OtherLookAndFeel otherLookAndFeel;
+
 	juce::AudioProcessorValueTreeState& valueTreeState;
 
-	juce::Label m_labels[N_SLIDERS_COUNT] = {};
-	juce::Slider m_sliders[N_SLIDERS_COUNT] = {};
-	std::unique_ptr<SliderAttachment> m_sliderAttachment[N_SLIDERS_COUNT] = {};
+	juce::Label m_labels[N_SLIDERS] = {};
+	juce::Slider m_sliders[N_SLIDERS] = {};
+	std::unique_ptr<SliderAttachment> m_sliderAttachment[N_SLIDERS] = {};
 
 	juce::Label automationTLabel;
 	juce::Label smoothingTypeLabel;
 	juce::Label detectionTypeLabel;
 
-	juce::TextButton typeAButton{ "A" };
-	juce::TextButton typeBButton{ "B" };
-	juce::TextButton typeCButton{ "C" };
+	juce::TextButton type1Button{ "1" };
+	juce::TextButton type2Button{ "2" };
 
-	std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonAAttachment;
-	std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonBAttachment;
-	std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> buttonCAttachment;
+	std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> button1Attachment;
+	std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> button2Attachment;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MultiAllPassAudioProcessorEditor)
 };
